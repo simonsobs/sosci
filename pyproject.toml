@@ -14,10 +14,12 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-dependencies = []
+dependencies = [
+    "sotodlib>=0.6.16",
+]
 
 [project.scripts]
-sosci = "sosci:__main__:main"
+sosci = "sosci.__main__:main"
 
 [build-system]
 requires = ["setuptools>=61", "setuptools-scm>=8"]
@@ -26,5 +28,16 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package-data]
 sosci = ["*.txt"]
 
+[tool.isort]
+skip = ["src/sosci/__about__.py"]
+
 [tool.setuptools_scm]
 version_file = "src/sosci/__about__.py"
+
+[dependency-groups]
+dev = [
+    "black>=26.1.0",
+    "isort>=7.0.0",
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+]

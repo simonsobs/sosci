@@ -3,8 +3,9 @@ from logging import Logger
 from pathlib import Path
 from urllib.request import urlopen
 
+
 def get_parser(parser: ArgumentParser) -> ArgumentParser:
-    """Create and return a sub-argument parser for the LAT mapmaking campaign."""
+    """Create and return a sub-argument parser for metadata purging."""
     parser.add_argument(
         "--file",
         "-f",

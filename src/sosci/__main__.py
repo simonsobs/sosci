@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from logging import getLogger
+
 from sosci.cli import SUBCOMMANDS
 
 
