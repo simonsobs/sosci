@@ -17,11 +17,14 @@ classifiers = [
 dependencies = []
 
 [project.scripts]
-sosci = "sosci:main"
+sosci = "sosci:__main__:main"
 
 [build-system]
 requires = ["setuptools>=61", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+sosci = ["*.txt"]
 
 [tool.setuptools_scm]
 version_file = "src/sosci/__about__.py"
