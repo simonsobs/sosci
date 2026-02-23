@@ -9,6 +9,7 @@ from typing import List
 
 from sotodlib.core.metadata import obsdb, obsfiledb
 
+from sosci.transfers import rsync, globus
 
 def metadata_update(db: str, outfile: Path, sub: List[str]) -> None:
     # If outfile is not specified, create a default outfile name
