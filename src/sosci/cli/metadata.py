@@ -167,17 +167,60 @@ def merge_move_databases(staged_path: Path, final_path: Path, logger: Logger) ->
 
 def get_parser(parser: ArgumentParser) -> ArgumentParser:
     """Create and return a sub-argument parser for metadata syncing."""
-    parser.add_argument("--destination-path", "-d", help="The path that the metadata store is")
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Dry run for testing.",
-    )
+    parser.add_argument("--transfer-method", choices=["rsync", "globus"], default="rsync",
+                        help="Transfer backend to use")
+    # Shared
+    parser.add_argument("--source-path", "-s", required=True,
+                        help="Source path to sync from")
+    parser.add_argument("--destination-path", "-d", required=True,
+                        help="Destination path to sync to")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Dry run (rsync only)")
+    
+    # Globus-specific
+    parser.add_argument("--source-endpoint",
+                        help="Globus source endpoint UUID")
+    parser.add_argument("--source-globus-root-path",
+                        help="Globus root path on the source endpoint")
+    parser.add_argument("--destination-endpoint",
+                        help="Globus destination endpoint UUID")
+    parser.add_argument("--destination-globus-root-path",
+                        help="Globus root path on the destination endpoint")
+    parser.add_argument("--globus-client-id",
+                        help="Globus Native App client ID")
+    parser.add_argument("--globus-refresh-token-file",
+                        help="Path to Globus refresh token JSON file")
     return parser
 
 def _main(args: Namespace, logger: Logger) -> None:
 
-    # Move data first somehow
+    # Move data
+    if args.transfer_method == "globus":
+        transfer = globus.GlobusTransfer(
+            source={
+                "path": args.source_path,
+                "endpoint": args.source_endpoint,
+                "globus_root_path": args.source_globus_root_path,
+            },
+            destination={
+                "path": args.destination_path,
+                "endpoint": args.destination_endpoint,
+                "globus_root_path": args.destination_globus_root_path,
+            },
+            globus_config={
+                "client_id": args.globus_client_id,
+                "refresh_token_file": args.globus_refresh_token_file,
+            },
+            logger=logger,
+        )
+        transfer.transfer()
+    else:
+        transfer = rsync.RsyncTransfer(
+            source=args.source_path,
+            destination=args.destination_path,
+            logger=logger,
+        )
+        transfer.transfer(dry_run=args.dry_run)
 
     # Start DB translation
     destination_path = Path(args.destination_path)

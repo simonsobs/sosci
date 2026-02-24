@@ -9,14 +9,11 @@ class RsyncTransfer:
         self.destination = destination
         self.logger = logger
 
-    def transfer(self, dry_run: bool = False, delete: bool = False) -> bool:
+    def transfer(self, dry_run: bool = False) -> bool:
         cmd = ["rsync", "-avz"]
 
         if dry_run:
             cmd.append("--dry-run")
-
-        if delete:
-            cmd.append("--delete")
 
         # Ensure trailing slash on source to sync contents
         source = self.source.rstrip("/") + "/"

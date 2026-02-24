@@ -16,6 +16,7 @@ classifiers = [
 ]
 dependencies = [
     "sotodlib>=0.6.16",
+    "globus_sdk>=4.0"
 ]
 
 [project.scripts]
