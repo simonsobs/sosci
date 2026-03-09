@@ -2439,7 +2439,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "globus-sdk" },
+    { name = "globus-sdk", specifier = ">=4.0" },
     { name = "sotodlib", specifier = ">=0.6.16" },
 ]
 

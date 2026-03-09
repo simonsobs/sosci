@@ -1,7 +1,7 @@
 import os
+from logging import Logger
 from pathlib import Path
 from time import sleep
-from logging import Logger
 from typing import Dict
 
 import globus_sdk

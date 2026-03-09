@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace
-from logging import getLogger
+from logging import basicConfig, getLogger
 
 from sosci.cli import SUBCOMMANDS
 
@@ -20,7 +20,9 @@ def get_parser() -> ArgumentParser:
 
 
 def main() -> None:
+
     logger = getLogger(name="sosci")
+    basicConfig(filename='sosci.log', level="DEBUG")
     parser = get_parser()
     args = parser.parse_args()
 

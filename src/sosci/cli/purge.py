@@ -14,11 +14,18 @@ def get_parser(parser: ArgumentParser) -> ArgumentParser:
         help="Path to a local txt file or a URL to a txt file with the files we need to purge.",
     )
     parser.add_argument(
+        "--base-path",
+        type=str,
+        help="Base path to prepend to the files listed in the file.",
+        required=True
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Dry run for testing.",
     )
     return parser
+
 
 def _main(args: Namespace, logger: Logger) -> None:
 
@@ -33,7 +40,7 @@ def _main(args: Namespace, logger: Logger) -> None:
         filename = filename.strip()
         if not filename:
             continue
-        file = Path(filename)
+        file = Path(args.base_path) / filename
         if file.exists():
             if not args.dry_run:
                 file.unlink()

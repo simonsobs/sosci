@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def print_db(db_path: str) -> None:
     
     con = sqlite3.connect(db_path)

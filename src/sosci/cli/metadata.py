@@ -9,7 +9,8 @@ from typing import List
 
 from sotodlib.core.metadata import obsdb, obsfiledb
 
-from sosci.transfers import rsync, globus
+from sosci.transfers import globus, rsync
+
 
 def metadata_update(db: str, outfile: Path, sub: List[str]) -> None:
     # If outfile is not specified, create a default outfile name
@@ -23,7 +24,7 @@ def metadata_update(db: str, outfile: Path, sub: List[str]) -> None:
     subs = list()
     for sarg in sub:
         oldpath, newpath = sarg.split(":")
-        oldpath = oldpath.replace("/", "\/")
+        oldpath = oldpath.replace("/", r"\/")
         subs.append(
             (
                 re.compile(oldpath),
@@ -165,6 +166,7 @@ def merge_move_databases(staged_path: Path, final_path: Path, logger: Logger) ->
             # We patched it, delete the temp db
             os.remove(staged_db)
 
+
 def get_parser(parser: ArgumentParser) -> ArgumentParser:
     """Create and return a sub-argument parser for metadata syncing."""
     parser.add_argument("--transfer-method", choices=["rsync", "globus"], default="rsync",
@@ -191,6 +193,7 @@ def get_parser(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument("--globus-refresh-token-file",
                         help="Path to Globus refresh token JSON file")
     return parser
+
 
 def _main(args: Namespace, logger: Logger) -> None:
 
