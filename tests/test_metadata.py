@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 from sosci.cli.metadata import (merge_move_databases, metadata_update,
                                 translate_context_file)
 
-from ._helpers import print_db
 
 
 def test_merge_move_databases_replace(temp_sqlite_db, temp_sqlite_db2, tmp_path):
@@ -76,7 +75,7 @@ def test_metadata_update(temp_sqlite_db, temp_sqlite_db2, tmp_path):
     out2 = tmp_path / "obsdb2.sqlite"
     assert not out1.exists()
     assert not out2.exists()
-    metadata_update(db=str(temp_sqlite_db), outfile=out1, sub=[f"/so/:/actual_so_space/"])
+    metadata_update(db=str(temp_sqlite_db), outfile=out1, sub=["/so/:/actual_so_space/"])
     assert out1.exists()
 
     con = sqlite3.connect(out1)
