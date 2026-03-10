@@ -10,7 +10,7 @@ class RsyncTransfer:
         self.logger = logger
 
     def transfer(self, dry_run: bool = False) -> bool:
-        cmd = ["rsync", "-avz"]
+        cmd = ["rsync", "-avz", "--exclude=*_local*", "--exclude=.*"]
 
         if dry_run:
             cmd.append("--dry-run")
