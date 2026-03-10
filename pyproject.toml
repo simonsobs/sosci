@@ -30,7 +30,9 @@ build-backend = "setuptools.build_meta"
 sosci = ["*.txt"]
 
 [tool.isort]
-skip = ["src/sosci/__about__.py"]
+line_length = 120
+profile = "black"
+skip = ["docs", ".github", ".vscode", "container", "env", "env311", "build", "src/sosci/__about__.py"]
 
 [tool.setuptools_scm]
 version_file = "src/sosci/__about__.py"
@@ -41,4 +43,27 @@ dev = [
     "isort>=7.0.0",
     "pytest>=9.0.2",
     "ruff>=0.15.0",
+    "coverage",
+    "pytest-cov>=2.6",
+    "coveralls>=1.5",
+    "pre-commit",
 ]
+
+[tool.coverage.run]
+source_pkgs = ["sosci", "tests"]
+branch = true
+parallel = true
+omit = ["src/sosci/__about__.py"]
+
+[tool.coverage.paths]
+sosci = ["src/sosci", "*/sosci/src/sosci"]
+tests = ["tests", "*/sosci/tests"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+exclude_also = ["if TYPE_CHECKING:"]
+omit = ["*/sosci/src/sosci/__main__.py"]
+
+[tool.ruff]
+line-length = 120
+exclude = ["docs", ".github", ".vscode", "container", "env", "env311", "build", "src/sosci/__about__.py"]
