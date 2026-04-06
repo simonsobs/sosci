@@ -1,39 +1,44 @@
-from argparse import ArgumentParser, Namespace
+import json
+import signal
+import threading
+from argparse import ArgumentParser
 from logging import basicConfig, getLogger
 
-from sosci.cli import SUBCOMMANDS
-
-
-def get_parser() -> ArgumentParser:
-    """Create and return the argument parser for the SO campaign."""
-    parser = ArgumentParser(description="Run the SO campaign.")
-    # Make sure all args here are redirected to vars starting with
-    # '_'.  We are going to clean those off before passing to the
-    # subcommand.
-    sps = parser.add_subparsers(dest='_pipemod', required=True)
-
-    for name, module in SUBCOMMANDS.items():
-        sp = sps.add_parser(name)
-        module.get_parser(sp)
-
-    return parser
+from sosci.config import Config
+from sosci.watchers.watcher import Watcher
 
 
 def main() -> None:
 
+    parser = ArgumentParser(description="sosci: Sync One Source to One Destination using Globus")
+    parser.add_argument("--config", "-c", type=str, help="Path to JSON configuration file)", required=True)
     logger = getLogger(name="sosci")
     basicConfig(filename='sosci.log', level="DEBUG")
-    parser = get_parser()
+
     args = parser.parse_args()
 
-    # Extract top-level args ...
-    top_args = {k: v for k, v in vars(args).items()
-                if k[0] == '_'}
-    for k in top_args:
-        delattr(args, k)
-    top_args = Namespace(**top_args)
+    with open(args.config, 'r') as f:
+        config_data = json.load(f)
+        session_config = Config(**config_data)
 
-    module = SUBCOMMANDS[top_args._pipemod]
-    _main = getattr(module, '_main', None)
-    if _main is not None:
-        _main(args, logger=logger)
+    shutdown_event = threading.Event()
+    signal.signal(signal.SIGTERM, lambda signum, frame: shutdown_event.set())
+
+    transfer_manager = TransferManager(session_config, logger)
+    watcher = Watcher(path=session_config.source.path,
+                      poll_interval=session_config.poll_interval,
+                      on_cycle_done=transfer_manager.to_transfer,
+                      logger=logger)
+
+    watcher.load_snapshot()
+    watcher.watch()
+    transfer_manager.start()
+
+    try:
+        shutdown_event.wait()
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt")
+    finally:
+        logger.info("Shutting down...")
+        watcher.stop()
+        transfer_manager.stop()

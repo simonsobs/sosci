@@ -16,7 +16,9 @@ classifiers = [
 ]
 dependencies = [
     "sotodlib>=0.6.16",
-    "globus_sdk>=4.0"
+    "globus_sdk>=4.0",
+    "pydantic>=2.0",
+    "watchdog>=3.0",
 ]
 
 [project.scripts]
