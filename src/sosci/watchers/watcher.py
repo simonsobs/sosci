@@ -52,7 +52,6 @@ class Watcher(FileSystemEventHandler):
         self.files_created = []
         self.files_deleted = []
         self.files_modified = []
-        self.files_moved = []
         self._on_cycle_done = on_cycle_done
 
         emitter_class = partial(_CallbackPollingEmitter, callback=self._cycle_done)
@@ -64,7 +63,7 @@ class Watcher(FileSystemEventHandler):
     def _cycle_done(self):
         """Called by the emitter at the end of each polling cycle."""
         if not (self.files_created or self.files_deleted
-                or self.files_modified or self.files_moved):
+                or self.files_modified):
             return
 
         if self._on_cycle_done:
@@ -72,19 +71,17 @@ class Watcher(FileSystemEventHandler):
                 created=self.files_created[:],
                 deleted=self.files_deleted[:],
                 modified=self.files_modified[:],
-                moved=self.files_moved[:],
             )
 
         self.files_created.clear()
         self.files_deleted.clear()
         self.files_modified.clear()
-        self.files_moved.clear()
 
     def on_created(self, event):
         if event.is_directory or self._is_excluded(event.src_path):
             return
         path = event.src_path
-        stable = is_file_stable(path, checks=5, interval=30)
+        stable = is_file_stable(path, checks=5, interval=10)
         if stable:
             self.files_created.append(path)
 
@@ -97,11 +94,6 @@ class Watcher(FileSystemEventHandler):
         if event.is_directory or self._is_excluded(event.src_path):
             return
         self.files_modified.append(event.src_path)
-
-    def on_moved(self, event):
-        if self._is_excluded(event.src_path) or self._is_excluded(event.dest_path):
-            return
-        self.files_moved.append((event.src_path, event.dest_path))
 
     def load_snapshot(self):
         """Load a previous DirectorySnapshot and diff it against the current
@@ -120,14 +112,12 @@ class Watcher(FileSystemEventHandler):
         self.files_created.extend(diff.files_created)
         self.files_deleted.extend(diff.files_deleted)
         self.files_modified.extend(diff.files_modified)
-        self.files_moved.extend(diff.files_moved)
 
         if self.logger:
             self.logger.info(
                 f"Snapshot diff: {len(diff.files_created)} created, "
                 f"{len(diff.files_deleted)} deleted, "
                 f"{len(diff.files_modified)} modified, "
-                f"{len(diff.files_moved)} moved"
             )
 
         return diff
@@ -150,5 +140,5 @@ class Watcher(FileSystemEventHandler):
 
     def stop(self):
         self.observer.stop()
-        self.save_snapshot()
         self.observer.join()
+        self.save_snapshot()
