@@ -24,6 +24,7 @@ def main() -> None:
 
     shutdown_event = threading.Event()
     signal.signal(signal.SIGTERM, lambda signum, frame: shutdown_event.set())
+    signal.signal(signal.SIGINT,  lambda s, f: shutdown_event.set())
 
     transfer_manager = TransferManager(session_config, logger)
     watcher = Watcher(path=session_config.source.path,

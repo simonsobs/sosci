@@ -55,12 +55,19 @@ class TransferManager:
         for i in range(0, len(modified_files), BATCH_SIZE):
             batch = modified_files[i:i + BATCH_SIZE]
             for transfer_client in self.transfer_clients:
-                transfer_client.transfer(batch)
+                try:
+                    transfer_client.transfer(batch)
+                except Exception as e:
+                    self.logger.warning(f"Error occurred while transferring files: {batch}. Error: {e}")
+
 
         for i in range(0, len(deleted_files), BATCH_SIZE):
             batch = deleted_files[i:i + BATCH_SIZE]
             for transfer_client in self.transfer_clients:
-                transfer_client.delete(batch)
+                try:
+                    transfer_client.delete(batch)
+                except Exception as e:
+                    self.logger.warning(f"Error occurred while deleting files: {batch}. Error: {e}")
 
     def _run(self):
         while self.running:

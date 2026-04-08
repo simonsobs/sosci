@@ -3,6 +3,7 @@ import pickle
 import re
 import time
 from functools import partial
+from pathlib import Path
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.api import BaseObserver
@@ -47,7 +48,7 @@ class Watcher(FileSystemEventHandler):
                  on_cycle_done=None, logger=None):
         self.path = path
         self.poll_interval = poll_interval
-        self.snapshot_path = snapshot_path or os.path.join(path, ".sosci_snapshot.pkl")
+        self.snapshot_path = Path(snapshot_path) if snapshot_path else Path.home() / ".sosci" / "sosci_snapshot.pkl"
         self.logger = logger
         self.files_created = []
         self.files_deleted = []
@@ -56,6 +57,8 @@ class Watcher(FileSystemEventHandler):
 
         emitter_class = partial(_CallbackPollingEmitter, callback=self._cycle_done)
         self.observer = BaseObserver(emitter_class, timeout=poll_interval)
+        self.snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+
 
     def _is_excluded(self, path):
         return EXCLUDE_PATTERN.search(os.path.basename(path)) is not None
