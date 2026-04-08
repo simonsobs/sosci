@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Polling-based file watcher** — monitors a source directory for created, modified, deleted, and moved files using watchdog's polling observer, compatible with any filesystem (including network mounts).
+- **Polling-based file watcher** — monitors a source directory for created, modified, and deleted files using watchdog's polling observer, compatible with any filesystem (including network mounts).
 - **File stability detection** — waits for files to stop growing before triggering a transfer, avoiding partial uploads.
 - **Multi-destination sync** — supports syncing to multiple Globus endpoints, each with its own authentication credentials.
 - **Crash recovery via snapshots** — saves a `DirectorySnapshot` on shutdown. On restart, diffs the snapshot against the current filesystem to detect changes that occurred while the daemon was down.
@@ -47,7 +47,8 @@ sosci is configured via a JSON file:
   "source": {
     "path": "/data/experiment",
     "endpoint": "source-endpoint-uuid",
-    "globus_root_path": "/root/path/on/source"
+    "globus_root_path": "/root/path/on/source",
+    "base_path": "/data/experiment"
   },
   "destination": [
     {
@@ -60,7 +61,8 @@ sosci is configured via a JSON file:
   ],
   "poll_interval": 30,
   "check_interval": 60,
-  "max_retries": 3
+  "max_retries": 3,
+  "snapshot_path": "~/.sosci/sosci_snapshot.pkl"
 }
 ```
 
@@ -71,6 +73,15 @@ sosci is configured via a JSON file:
 | `poll_interval` | Seconds between filesystem polls (default: 30) |
 | `check_interval` | Seconds between modified-file checks during transfer (default: 60) |
 | `max_retries` | Max checks for modified files before giving up (default: 3) |
+| `snapshot_path` | Where to persist the directory snapshot for crash recovery (default: `~/.sosci/sosci_snapshot.pkl`) |
+
+## Testing
+
+Run the test suite with:
+
+```bash
+uv run pytest
+```
 
 ## Usage
 
