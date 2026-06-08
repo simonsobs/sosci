@@ -62,3 +62,16 @@ def test_delete_submits_and_returns_task_id(gt):
     assert task_id == "del-7"
     transfer_client.submit_delete.assert_called_once()
     mock_sdk.DeleteData.return_value.add_item.assert_called_once()
+
+
+def test_compute_destination_path_valid(gt):
+    from pathlib import Path
+    t, _ = gt
+    result = t._compute_destination_path("/src/foo/a.txt")
+    assert result == Path("/dst/foo/a.txt")
+
+
+def test_compute_destination_path_outside_source_returns_none(gt):
+    t, _ = gt
+    result = t._compute_destination_path("/other/foo/a.txt")
+    assert result is None

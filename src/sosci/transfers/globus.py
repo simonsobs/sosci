@@ -16,6 +16,17 @@ class GlobusTransfer:
 
         self.client = globus_sdk.NativeAppAuthClient(client_id=self.config["client_id"])
 
+    def _compute_destination_path(self, filename: str) -> Path | None:
+        filename_path = Path(filename)
+        if not filename_path.is_relative_to(self.source["path"]):
+            self.logger.warning(f"Skipping {filename}: not under managed source path {self.source['path']}")
+            return None
+        destination_path = Path(self.destination["path"]) / filename_path.relative_to(self.source["path"])
+        if not destination_path.is_relative_to(self.destination["path"]):
+            self.logger.warning(f"Skipping {filename}: computed destination {destination_path} escapes managed destination path {self.destination['path']}")
+            return None
+        return destination_path
+
     def _get_authorizer(self):
         tokens_adapter = SimpleJSONFileAdapter(
             os.path.expanduser(self.config["refresh_token_file"])
@@ -45,21 +56,21 @@ class GlobusTransfer:
             encrypt_data=True,
         )
         for filename in filenames:
+            destination_path = self._compute_destination_path(filename)
+            if destination_path is None:
+                continue
             final_source_path = (
                 Path(filename).relative_to(self.source["globus_root_path"])
                 if self.source["globus_root_path"]
                 else Path(filename)
             )
             self.logger.debug(f"final_source_path: {final_source_path}")
-            destination_path = Path(self.destination["path"]) / Path(filename).relative_to(self.source["path"])
             final_destin_path = (
                 destination_path.relative_to(self.destination["globus_root_path"])
                 if self.destination["globus_root_path"]
                 else destination_path
             )
             self.logger.debug(f"Transfer final_destin_path: {final_destin_path}")
-
-           # Prepare and submit the transfer task
             task_data.add_item(
                 str(final_source_path), str(final_destin_path), recursive=False
             )
@@ -78,8 +89,9 @@ class GlobusTransfer:
             label="My delete task",
         )
         for filename in filenames:
-
-            destination_path = Path(self.destination["path"]) / Path(filename).relative_to(self.source["path"])
+            destination_path = self._compute_destination_path(filename)
+            if destination_path is None:
+                continue
             final_destin_path = (
                 destination_path.relative_to(self.destination["globus_root_path"])
                 if self.destination["globus_root_path"]
